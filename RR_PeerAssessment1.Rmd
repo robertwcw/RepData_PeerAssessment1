@@ -1,0 +1,74 @@
+---
+title: "RepData_PeerAssessment1"
+author: "robertwcw"
+date: "9/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This assignment makes use of the data collected from a personal activity monitoring device, that captures data at 5 minute intervals through out the day on the number of steps taken by an anonymous individual in daily activities during the months of November and October in 2012. The device that was used to capture the steps data is part of the “quantified self” movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. 
+
+The data set in CSV format is available here: [Activity monitoring data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip).
+
+Each row in the data set consists of three variables recorded the total number of steps performed in daily activities in every 5 minutes each day consecutively for two months.
+
+The variables included in the data set are:  
+1. **steps** (Numeric): Number of steps taken by the anonymous individual in 5-minute interval.  
+2. **date** (Date): The date (YYYY-MM-DD) which the measurement was taken.  
+3. **interval** (Numeric): Identifier for the 5-minute interval for which the measurement was taken.  
+
+
+**<data.load>**
+```{r data.load}
+filetmp <- tempfile()
+datadir <- paste(".", "data", sep = "/")
+fileurl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+download.file(fileurl, filetmp)
+if (!dir.exists(datadir)) 
+    {
+        dir.create(datadir)
+    }
+unzip(filetmp, exdir = datadir, overwrite = TRUE)
+filelst <- as.list(unzip(filetmp, list = TRUE))
+filein <- as.character()
+filesrc <- as.character()
+library(readr)
+for (i in 1:length(filelst$Name)) {
+    filein <- filelst$Name[i]
+    filesrc <- paste(datadir, filein, sep = "/")
+    filein <- strsplit(filein, ".", fixed = TRUE)[[1]][1]
+    assign(filein, read_csv(filesrc))
+}
+detach("package:readr", unload = TRUE)
+unlink(filetmp)
+rm(filetmp, fileurl, filein, filesrc, i)
+```
+
+There are 13.11% missing values 'NA' found in the data set
+Using k-nearest neighbor to impute the missing values 'NA'.  
+
+
+**<data.prep>**
+```{r data.prep}
+library(impute)
+imputed.activity <- impute.knn(data.matrix(activity), k = 15)$data
+activity$steps <- imputed.activity[,1]
+detach("package:impute", unload = TRUE)
+```
+
+## Including Plots
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+```{r house.keeping}
+# detach("package:readr", unload = TRUE)
+# detach("package:tidyr", unload = TRUE)
+```
