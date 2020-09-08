@@ -5,7 +5,7 @@ date: "9/7/2020"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -19,52 +19,81 @@ Each row in the data set consists of three variables recorded the total number o
 
 The variables included in the data set are:  
 1. **steps** (Numeric): Number of steps taken by the anonymous individual in 5-minute interval.  
-2. **date** (Date): The date (YYYY-MM-DD) which the measurement was taken.  
-3. **interval** (Numeric): Identifier for the 5-minute interval for which the measurement was taken.  
+2. **date** (Date): The date (YYYY-MM-DD) which the measurements were taken.  
+3. **interval** (Numeric): Identifier for the 5-minute interval for which the observation was captured.  
 
+**<data.load>**  
+1. load data set into R environment.  
+2. take-a-peek (manual) at the unzipped data set to determine number of file in the set, data format and the presence of header...etc.  
 
-**<data.load>**
-```{r data.load}
+<!-- filels <- as.list(unzip(filetmp, list = TRUE)) -->
+<!-- filels$Name #display file name & file type. -->
+<!-- length(filels$Name) #display number of files in the data set. -->
+<!-- filels$Length #display physical file size -->
+<!-- length(readLines(filels$Name[i])) - 1 #display row count (text-file only) -->
+<!-- readLines(filels$Name[i], n = 5) #display first 5 lines. (text-file only) -->
+
+```{r data.load, message = FALSE}
 filetmp <- tempfile()
 datadir <- paste(".", "data", sep = "/")
 fileurl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 download.file(fileurl, filetmp)
+
 if (!dir.exists(datadir)) 
     {
         dir.create(datadir)
     }
+
 unzip(filetmp, exdir = datadir, overwrite = TRUE)
-filelst <- as.list(unzip(filetmp, list = TRUE))
+filels <- as.list(unzip(filetmp, list = TRUE))
 filein <- as.character()
 filesrc <- as.character()
+
 library(readr)
-for (i in 1:length(filelst$Name)) {
-    filein <- filelst$Name[i]
-    filesrc <- paste(datadir, filein, sep = "/")
-    filein <- strsplit(filein, ".", fixed = TRUE)[[1]][1]
-    assign(filein, read_csv(filesrc))
-}
+for (i in 1:length(filels$Name)) 
+    {
+        filesrc <- paste(datadir, filels$Name[[i]], sep = "/")
+        filein <- strsplit(filels$Name[[i]], ".", fixed = TRUE)[[1]][1]
+        assign(filein, read_csv(filesrc))
+    }
 detach("package:readr", unload = TRUE)
+
 unlink(filetmp)
 rm(filetmp, fileurl, filein, filesrc, i)
 ```
-
-There are 13.11% missing values 'NA' found in the data set
-Using k-nearest neighbor to impute the missing values 'NA'.  
-
+  
+**<data.eval>**  
+Perform brief evaluation on the data set if there are missing values.
+e.g. NA, NaN or NULL  
+```{r data.eval}
+summary(activity)
+colMeans(is.na(activity))
+```
 
 **<data.prep>**
-```{r data.prep}
+```{r data.prep, results = "hide"}
 library(impute)
 imputed.activity <- impute.knn(data.matrix(activity), k = 15)$data
 activity$steps <- imputed.activity[,1]
 detach("package:impute", unload = TRUE)
 ```
+After imputation of missing values 'NA' in the data set.
+```{r}
+summary(activity)
+```
 
-## Including Plots
+Histogram of the total number of steps taken for each day.
+```{r total_steps}
+library(dplyr)
+totalsteps <- activity %>% 
+                    select(date, steps) %>%
+                    group_by(date) %>%
+                    summarise(steps = sum(steps))
+detach("package:dplyr", unload = TRUE)
+```
 
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
 
 
 
