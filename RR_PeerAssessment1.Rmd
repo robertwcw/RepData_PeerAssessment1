@@ -5,16 +5,23 @@ date: "9/7/2020"
 output: html_document
 ---
 
-```{r setup, include = FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 	.Rfliburl <- "https://raw.githubusercontent.com/robertwcw/Rflib/master"
-	source(file.path(.Rfliburl,"getRflib.R"),local=TRUE)
-	source(getRflib("is.defined.R"),local=TRUE)
-	source(getRflib("myplclust.R"),local=TRUE)
-	source(getRflib("strCap.R"),local=TRUE)
+	source(file.path(.Rfliburl,"getRflib.R"),local = TRUE)
+	source(getRflib("is.defined.R"),local = TRUE)
+	source(getRflib("myplclust.R"),local = TRUE)
+	source(getRflib("strCap.R"),local = TRUE)
+	library(readr, warn.conflicts = TRUE, quietly = TRUE)
+	library(dplyr, warn.conflicts = TRUE, quietly = TRUE)
+	library(lubridate, warn.conflicts = TRUE, quietly = TRUE)
+	library(ggplot2, warn.conflicts = TRUE, quietly = TRUE)
+	library(scales, warn.conflicts = TRUE, quietly = TRUE)
 ```
 
-## Introduction
+&nbsp;
+
+### Introduction
 
 This assignment makes use of the data collected from a personal activity monitoring device strapped to the waist, captures data at 5 minute intervals through out the day on the number of steps taken by an anonymous individual in daily activities during the months of November and October in 2012. The device that was used to capture the steps data is part of the “quantified self” movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. 
 
@@ -23,14 +30,16 @@ The data set in CSV format is available here: [Activity monitoring data](https:/
 Each row in the data set consists of three variables recorded the total number of steps taken in daily activities in every 5 minutes interval spanned across 24 hours each day for two consecutive months. The context of the steps taken in daily activities is referring to the body movements like walking (include up/down stairs), running or jumping.
 
 The variables found in the data set are:  
-1. **steps** (Numeric): Number of steps taken by the anonymous individual in 5-minute interval.  
-2. **date** (Date): The date (YYYY-MM-DD) which the measurements were taken.  
-3. **interval** (Numeric): Identifier for the 5-minute interval for which the observation was captured.
+1. **steps**: Number of steps taken by the anonymous individual in 5-minute interval.  
+2. **date**: The date (YYYY-MM-DD) which the measurements were taken.  
+3. **interval**: Identifier for the 5-minute interval for which the observation was captured.
 
-**<data.load>**
+&nbsp;
+
+### Load Data
 
 1. download data set and unzip to designated directory.  
-2. take-a-peek at the unzipped data set to determine number of file, file type, data format and the presence of header...etc, to determine the  appropriate technique to process the 'raw' data into analytic data for downstream analysis.
+2. take-a-peek at the unzipped data set to determine number of files, file type, data format and the presence of header...etc, to determine the  appropriate technique to process the 'raw' data into analytic data for downstream analysis.
 
 <!-- as.list(unzip(filetmp, list = TRUE)) #get file list -->
 <!-- length(filels$Name) #display number of files in the data set. -->
@@ -39,7 +48,8 @@ The variables found in the data set are:
 <!-- length(readLines(filels$Name[i])) - 1 #display row count (text-file only) -->
 <!-- readLines(filels$Name[i], n = 5) #display first 5 lines. (text-file only) -->
 
-```{r data.load, message = FALSE, results = "hide"}
+```{r data.load, message = FALSE}
+
 filetmp <- tempfile()
 datadir <- paste(".", "data", sep = "/")
 fileurl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
@@ -55,70 +65,129 @@ filels <- as.list(unzip(filetmp, list = TRUE))
 filein <- as.character()
 filesrc <- as.character()
 
-library(readr)
 for (i in 1:length(filels$Name)) 
     {
         filesrc <- paste(datadir, filels$Name[[i]], sep = "/")
         filein <- strsplit(filels$Name[[i]], ".", fixed = TRUE)[[1]][1]
         assign(filein, read_csv(filesrc))
     }
-detach("package:readr", unload = TRUE)
 
 unlink(filetmp)
 rm(filetmp, fileurl, filein, filesrc, i)
+
 ```
-  
-**<data.eval>**
 
-'activity' data structure.
+&nbsp;
 
-```{r}
+### Evaluate Data
+
+One data set named **activity** was extracted from the zipped file and loaded into R.  
+
+Data structure of **activity**:
+
+```{r data.eval0}
 str(activity)
 ```
 
-The 5-numbers summary of 'activity' data set shows there are 2304 missing values, representing approx. 13.11% missing values out of the entire data set found in the 1st column named **steps** variable, whereas 2nd and 3rd columns **date** and **interval** variables are complete without missing values.
+* **activity** variable data type.
+  + **steps**: numeric class vector.
+  + **date**: date class vector.
+  + **interval**: numeric class vector.
 
-```{r}
+```{r data.eval1}
 summary(activity)
 colMeans(is.na(activity))
 ```
+```{r data.eval2, echo = FALSE, results = "hide"}
+na.count <- sum(is.na(activity$steps)) + 
+            sum(is.na(activity$date)) + 
+            sum(is.na(activity$interval))
+na.ratio <- mean(is.na(activity$steps)) +
+            mean(is.na(activity$date)) +
+            mean(is.na(activity$interval))
+```
 
+The 5-numbers summary of **activity** data set shows there are `r na.count` missing values (coded as NA), representing approx. `r percent(na.ratio)` missing values out of the entire data set. The ratio of missing values considered significant which can skewed the outcomes of downstream analysis.
 
-There are some missing columns (on dates Oct01, Oct08, Nov01, Nov04, Nov09, Nov10, Nov14 and Nov30) in the histogram plotted below due to the presence of missing values in the data set.
+All missing values are found in the 1st column **steps** variable, whereas 2nd and 3rd columns **date** and **interval** variables are complete.
 
-```{r steps.plot}
+&nbsp;
+
+### Prepare Analytic Data
+
+```{r data.prep, message = FALSE}
+
+# Capitlize variable names.
 names(activity) <- strCap(names(activity))
-no.na <- !is.na(activity$Steps)
-library(ggplot2)
-library(scales)
-# ggplot(activity[no.na,]) + geom_col(aes(x = Date, y = Steps, fill = Steps)) +
-gr0 <- ggplot(activity[no.na,], aes(x = Date, y = Steps, fill = Steps)) 
-gr0 <- gr0 + geom_col() + scale_x_date(breaks = breaks_pretty(11)) 
+
+actsum <- activity %>% 
+        select(Date, Steps) %>%
+        mutate(Date = factor(Date),
+               Mean = as.numeric(0),
+               Median = as.numeric(0)) %>%
+        group_by(Date) %>% 
+        summarise(Mean = mean(Steps, na.rm = TRUE),
+                  Median = median(Steps, na.rm = TRUE),
+                  Steps = sum(Steps, na.rm = TRUE))
+
+```
+
+&nbsp;
+
+### Exploratory Data Analysis
+
+There are some missing bar-columns *( on dates Oct-01, Oct-08, Nov-01, Nov-04, Nov-09, Nov-10, Nov-14 and Nov-30 )* in the histogram plotted below due to the presence of missing values in the data set as mentioned.
+
+```{r steps.hist.plot}
+
+h <- hist(as.Date(actsum$Date), breaks = "days", plot = FALSE)
+h$counts <- actsum$Steps
+par(cex.axis = 0.8, las = 2)
+plot(h, xaxt = "n", ann = FALSE, col = "grey")
+
+axis(1, at = seq(h$breaks[1], h$breaks[length(h$breaks)], by = 6), 
+     labels = c(format(as.Date(seq(h$breaks[1], h$breaks[length(h$breaks)], 
+                                   by = 6 ), origin = "1970-01-01"), "%b-%d")))
+
+steps.mean <- mean(actsum$Steps)
+steps.median <- median(actsum$Steps)
+abline(h = steps.mean, col = "red")
+abline(h = steps.median, col = "green")
+
+legend("topleft", legend = c("Mean", "Median"), 
+       lty = c(1,1,1), col = c("red","green"), cex = 0.75)
+
+title("Number of Steps Taken Per day", xlab = "Date", ylab = "Steps Count")
+
+```
+
+```{r steps.hist.ggplot, include=FALSE, echo = FALSE, results = "hide"}
+# gr0 <- ggplot(actsum, aes(x = as.Date(Date), y = Steps, fill = Steps))
+gr0 <- ggplot(actsum, aes(x = as.Date(Date), y = Steps))
+gr0 <- gr0 + geom_col()
+gr0 <- gr0 + scale_x_date(breaks = breaks_pretty(11))
 gr0 <- gr0 + theme(plot.title = element_text(hjust = 0.5),
                    plot.subtitle = element_text(hjust = 0.5),
                    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-gr0 <- gr0 + labs(title = "Number of Steps Taken for Each Day",
+gr0 <- gr0 + labs(title = "Number of Steps Taken Per Day",
                   subtitle = "(October & November, 2012)")
-gr0 <- gr0 + xlab("Date") + ylab("Steps Count")  
+gr0 <- gr0 + xlab("Date") + ylab("Steps Count")
+
+gr0 <- gr0 + geom_hline(data = actsum,
+                        aes(yintercept = mean(Steps), col = "Mean"))
+gr0 <- gr0 + geom_hline(data = actsum,
+                        aes(yintercept = median(Steps), col = "Median"))
+gr0 <- gr0 + scale_color_discrete(name = "Central Tendency")
 print(gr0)
-detach("package:ggplot2", unload = TRUE)
-detach("package:scales", unload = TRUE)
-rm(no.na)
 ```
 
+The Mean value (`r format(steps.mean,nsmall=2)`) and Median value (`r format(steps.median,nsmall=2)`) of the **Number of Steps Taken Per Day** are indicated by the visual representation of both red and green horizontal lines overlaid on the histogram above.  
 
+&nbsp;
 
-
-
-
-**<data.prep>**
-
-```{r data.prep, results = "hide"}
-# colnames(activity) <- c("Steps","Date","Interval")
-```
 
 k-nearest neighbour imputation method to replace the missing values found in the activity data set.
-```{r na.impute}
+```{r missing.impute}
 # library(impute)
 # imputed.activity <- impute.knn(data.matrix(activity), k = 15)$data
 # detach("package:impute", unload = TRUE)
@@ -134,10 +203,15 @@ k-nearest neighbour imputation method to replace the missing values found in the
 
 
 
-
-
-
 ```{r house.keeping}
+# detach("package:ggplot2", unload = TRUE)
+# detach("package:scales", unload = TRUE)
+# detach("package:dplyr", unload = TRUE)
+# detach("package:lubridate", unload = TRUE)
 # detach("package:readr", unload = TRUE)
-# detach("package:tidyr", unload = TRUE)
+# rm(.Rfliburl)
+# rm(getRflib)
+# rm(is.defined)
+# rm(myplclust)	
+# rm(strCap)
 ```
