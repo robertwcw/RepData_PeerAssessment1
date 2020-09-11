@@ -20,7 +20,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 &nbsp;
 
-### Introduction
+## Introduction
 
 This assignment makes use of the data collected from a personal activity monitoring device strapped to the waist, captures data at 5 minute intervals through out the day on the number of steps taken by an anonymous individual in daily activities during the months of November and October in 2012. The device that was used to capture the steps data is part of the “quantified self” movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. 
 
@@ -32,10 +32,9 @@ The variables found in the data set are:
 1. **steps**: Number of steps taken by the anonymous individual in 5-minute interval.  
 2. **date**: The date (YYYY-MM-DD) which the measurements were taken.  
 3. **interval**: Identifier for the 5-minute interval for which the observation was captured.
-
 &nbsp;
 
-### Load Data
+### Loading and Preprocessing Data
 
 1. download data set and unzip to designated directory.  
 2. take-a-peek at the unzipped data set to determine number of files, file type, data format and the presence of header...etc, to determine the  appropriate technique to process the 'raw' data into analytic data for downstream analysis.
@@ -76,11 +75,7 @@ rm(filetmp, fileurl, filein, filesrc, i)
 
 ```
 
-&nbsp;
-
-### Evaluate Data
-
-One data set named **activity** was extracted from the zipped file and loaded into R.  
+One data set named **activity** was extracted from the downloaded zip file and loaded into R.  
 
 Data structure of **activity**:
 
@@ -93,12 +88,18 @@ str(activity)
   + **date**: character class vector.
   + **interval**: integer class vector.
   
-Take note that the variable **date** shall inherits date class vector instead of the current character class vector for which date data values are stored as character string in the **activity** data set. Time-series related analysis requires that the **date** variable be transformed into formal date class vector to warrant robust analysis.
+Take note that the variable **date** shall belonged to the date class vector instead of the current character class vector for which date values are stored as character string in the **activity** data set. Time-series related analysis requires that the **date** variable be transformed into formal date class vector to warrant proper analysis.
 
+*5-numbers summary*
 ```{r data.eval1}
 summary(activity)
+```
+
+*Missing value distribution*
+```{r data.evl2}
 colMeans(is.na(activity))
 ```
+
 ```{r data.eval2, echo = FALSE, results = "hide"}
 na.count <- sum(is.na(activity$steps)) + 
             sum(is.na(activity$date)) + 
@@ -108,16 +109,14 @@ na.ratio <- mean(is.na(activity$steps)) +
             mean(is.na(activity$interval))
 ```
 
-The 5-numbers summary of **activity** data set shows there are `r na.count` missing values (coded as NA), representing approx. `r percent(na.ratio)` missing values out of the **activity** data set. The ratio of missing values considered significant in this case which can skewed the outcomes of downstream analysis.
+The 5-numbers summary of **activity** data set shows there are `r na.count` missing values (coded as NA), representing approx. `r percent(na.ratio)` missing values present in the data set. The ratio of missing values considered significant in this case which can skewed the outcomes of downstream analysis.
 
-All missing values are found in the 1st column **steps** variable, whereas 2nd and 3rd columns **date** and **interval** variables are complete.
-
-&nbsp;
-
-### Prepare Analytic Data
+Missing value distribution reveals how the missing values are distributed in the data set.  
+- **steps**: contains `r percent(colMeans(is.na(activity))[1])` missing value.  
+- **date**: `r percent(colMeans(is.na(activity))[2])`.  
+- **interval**: `r percent(colMeans(is.na(activity))[3])`.  
 
 ```{r data.prep, message = FALSE}
-
 # Capitlize variable names.
 names(activity) <- strCap(names(activity))
 
@@ -130,17 +129,14 @@ actsum <- activity %>%
         summarise(Mean = mean(Steps, na.rm = TRUE),
                   Median = median(Steps, na.rm = TRUE),
                   Steps = sum(Steps, na.rm = TRUE))
-
 ```
-
 &nbsp;
 
-### Exploratory Data Analysis
+### What is mean total number of steps taken per day?
 
-There are missing bar-columns *( for dates Oct-01, Oct-08, Nov-01, Nov-04, Nov-09, Nov-10, Nov-14 and Nov-30 )* in the histogram plotted below due to the presence of missing values in the data set as mentioned.
+There are missing bar-columns *( for dates Oct-01, Oct-08, Nov-01, Nov-04, Nov-09, Nov-10, Nov-14 and Nov-30 )* in the histogram due to the presence of missing values in the data set as mentioned.
 
 ```{r steps.hist.plot}
-
 h <- hist(as.Date(actsum$Date), breaks = "days", freq = FALSE, plot = FALSE)
 h$counts <- actsum$Steps
 
@@ -156,8 +152,11 @@ abline(h = steps.mean, col = "red")
 abline(h = steps.median, col = "green")
 legend("topleft", legend = c("Mean", "Median"), 
        lty = c(1,1,1), col = c("red","green"), cex = 0.75)
-title("Number of Steps Taken Per day", xlab = "Date", ylab = "Steps Count")
-
+title(main = "Number of Steps Taken Per Day", 
+      sub = "( Year 2012 )",
+      xlab = "Date", 
+      ylab = "Steps Count",
+      cex = 1)
 ```
 
 ```{r steps.hist.ggplot, include=FALSE, echo = FALSE, results = "hide"}
@@ -179,11 +178,10 @@ gr0 <- gr0 + geom_hline(data = actsum,
 gr0 <- gr0 + scale_color_discrete(name = "Central Tendency")
 print(gr0)
 ```
-
-Mean value (`r format(steps.mean,nsmall=2)`) and Median value (`r format(steps.median,nsmall=2)`) of the **Number of Steps Taken Per Day** are indicated by the visual representation of both red and green horizontal lines overlaid on the histogram above.  
-
+**
+The total number of steps taken per day by the anonymous are illustrated in the histogram, where each bar-column in the graph represents the total steps count recorded each day. The mean value ``r format(steps.mean,nsmall=2)`` and median value ``r format(steps.median,nsmall=2)`` of the steps count observations accumulated over the two months period as portrayed by the visual representation of the red and green horizontal lines overlaid on the histogram, hovering closely around the 10,000 mark indicate that the anonymous individual performed, on average, `10,000` steps per day in daily activities during the months of October and November, 2012.  
+**
 &nbsp;
-
 
 k-nearest neighbour imputation method to replace the missing values found in the activity data set.
 ```{r data.impute}
