@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+    Sys.setenv(TZ = "UTC")
 	.Rfliburl <- "https://raw.githubusercontent.com/robertwcw/Rflib/master"
 	source(file.path(.Rfliburl,"getRflib.R"),local = TRUE)
 	source(getRflib("is.defined.R"),local = TRUE)
@@ -17,7 +18,6 @@ knitr::opts_chunk$set(echo = TRUE)
 	library(ggplot2, warn.conflicts = TRUE, quietly = TRUE)
 	library(scales, warn.conflicts = TRUE, quietly = TRUE)
 ```
-
 &nbsp;
 
 ## Introduction
@@ -47,7 +47,6 @@ The variables found in the data set are:
 <!-- readLines(filels$Name[i], n = 5) #display first 5 lines. (text-file only) -->
 
 ```{r data.load, message = FALSE}
-
 filetmp <- tempfile()
 datadir <- paste(".", "data", sep = "/")
 fileurl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
@@ -72,7 +71,6 @@ for (i in 1:length(filels$Name))
 
 unlink(filetmp)
 rm(filetmp, fileurl, filein, filesrc, i)
-
 ```
 
 One data set named **activity** was extracted from the downloaded zip file and loaded into R.  
@@ -84,11 +82,11 @@ str(activity)
 ```
 
 * **activity** variable data type.
-  + **steps**: integer class vector.
-  + **date**: character class vector.
-  + **interval**: integer class vector.
+  + **steps**: integer class.
+  + **date**: character class.
+  + **interval**: integer class.
   
-Take note that the variable **date** shall belonged to the date class vector instead of the current character class vector for which date values are stored as character string in the **activity** data set. Time-series related analysis requires that the **date** variable be transformed into formal date class vector to warrant proper analysis.
+Take note that the variable **date** shall belonged to the date class data type instead of the current character class data type for which date values are stored as character string. Time-series related analysis requires that the **date** variable be transformed into formal date class vector to warrant proper analysis.
 
 *5-numbers summary*
 ```{r data.eval1}
@@ -111,24 +109,39 @@ na.ratio <- mean(is.na(activity$steps)) +
 
 The 5-numbers summary of **activity** data set shows there are `r na.count` missing values (coded as NA), representing approx. `r percent(na.ratio)` missing values present in the data set. The ratio of missing values considered significant in this case which can skewed the outcomes of downstream analysis.
 
-Missing value distribution reveals how the missing values are distributed in the data set.  
+Missing value distribution, not in the usual statistical distribution sense, simply reveals how the missing values are scattered in the data set.  
 - **steps**: contains `r percent(colMeans(is.na(activity))[1])` missing value.  
 - **date**: `r percent(colMeans(is.na(activity))[2])`.  
 - **interval**: `r percent(colMeans(is.na(activity))[3])`.  
+```{r}
+rm(na.count, na.ratio)
+```
 
-```{r data.prep, message = FALSE}
+```{r data.prep}
 # Capitlize variable names.
 names(activity) <- strCap(names(activity))
 
+# hr <- activity$Interval %/% 100 # e.g. 2355 gives 23
+# mn <- activity$Interval %% 100 # e.g 2355 gives 55
+
+time.sect <- substr(as.POSIXct(sprintf("%04.0f", activity$Interval), format = '%H%M'), 12, 19)
+dtime <- as.POSIXct(paste(activity$Date, time.sect), format = "%Y-%m-%d %H:%M:%S")
+
+# transform Date variable to 'date' class and add d datetime column to activity
+activity <- mutate(activity, 
+                   Date = as.Date(Date),
+                   Time = dtime)
+
 actsum <- activity %>% 
-        select(Date, Steps) %>%
-        mutate(Date = factor(as.Date(Date)),
-               Mean = as.numeric(0),
-               Median = as.numeric(0)) %>%
-        group_by(Date) %>% 
-        summarise(Mean = mean(Steps, na.rm = TRUE),
-                  Median = median(Steps, na.rm = TRUE),
-                  Steps = sum(Steps, na.rm = TRUE))
+                select(Date, Steps) %>%
+                mutate(Mean = as.numeric(0),
+                       Median = as.numeric(0)) %>%
+              group_by(Date) %>% 
+             summarise(Mean = mean(Steps, na.rm = TRUE),
+                       Median = median(Steps, na.rm = TRUE),
+                       Steps = sum(Steps, na.rm = TRUE))
+
+rm(time.sect, dtime)
 ```
 &nbsp;
 
@@ -137,7 +150,7 @@ actsum <- activity %>%
 There are missing bar-columns *( for dates Oct-01, Oct-08, Nov-01, Nov-04, Nov-09, Nov-10, Nov-14 and Nov-30 )* in the histogram due to the presence of missing values in the data set as mentioned.
 
 ```{r steps.hist.plot}
-h <- hist(as.Date(actsum$Date), breaks = "days", freq = FALSE, plot = FALSE)
+h <- hist(actsum$Date, breaks = "days", freq = FALSE, plot = FALSE)
 h$counts <- actsum$Steps
 
 par(cex.axis = 0.8, las = 2)
@@ -160,8 +173,8 @@ title(main = "Number of Steps Taken Per Day",
 ```
 
 ```{r steps.hist.ggplot, include=FALSE, echo = FALSE, results = "hide"}
-# gr0 <- ggplot(actsum, aes(x = as.Date(Date), y = Steps, fill = Steps))
-gr0 <- ggplot(actsum, aes(x = as.Date(Date), y = Steps))
+# gr0 <- ggplot(actsum, aes(x = Date, y = Steps, fill = Steps))
+gr0 <- ggplot(actsum, aes(x = Date, y = Steps))
 gr0 <- gr0 + geom_col()
 gr0 <- gr0 + scale_x_date(breaks = breaks_pretty(11))
 gr0 <- gr0 + theme(plot.title = element_text(hjust = 0.5),
@@ -170,7 +183,6 @@ gr0 <- gr0 + theme(plot.title = element_text(hjust = 0.5),
 gr0 <- gr0 + labs(title = "Number of Steps Taken Per Day",
                   subtitle = "(October & November, 2012)")
 gr0 <- gr0 + xlab("Date") + ylab("Steps Count")
-
 gr0 <- gr0 + geom_hline(data = actsum,
                         aes(yintercept = mean(Steps), col = "Mean"))
 gr0 <- gr0 + geom_hline(data = actsum,
@@ -182,6 +194,18 @@ print(gr0)
 The total number of steps taken per day by the anonymous are illustrated in the histogram, where each bar-column in the graph represents the total steps count recorded each day. The mean value ``r format(steps.mean,nsmall=2)`` and median value ``r format(steps.median,nsmall=2)`` of the steps count observations accumulated over the two months period as portrayed by the visual representation of the red and green horizontal lines overlaid on the histogram, hovering closely around the 10,000 mark indicate that the anonymous individual performed, on average, `10,000` steps per day in daily activities during the months of October and November, 2012.  
 **
 &nbsp;
+
+<!-- frequency param setting for ts() -->
+<!-- interval	frequency -->
+<!-- annually        1 -->
+<!-- quarterly       4 -->
+<!-- monthly        12 -->
+<!-- weekly         52 -->
+<!-- the frequency is the number of observations per cycle (normally a year, a week, a day or an hour). -->
+<!-- if the frequency of observation is greater than once per week, then there is usually  more than one way of handling the frequency. e.g. data with per minute observation might have an hourly seasonality (frequency = 1 x 60), a daily seasonality (frequency = 1 x 60 x 24), a weekly seasonality (frequency = 1 x 60 x 24 x 7) and an annually seasonality (frequency = 1 x 60 x 24 x 365.25) -->
+
+
+
 
 k-nearest neighbour imputation method to replace the missing values found in the activity data set.
 ```{r data.impute}
