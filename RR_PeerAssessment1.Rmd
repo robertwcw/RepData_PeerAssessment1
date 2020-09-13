@@ -125,7 +125,7 @@ names(activity) <- strCap(names(activity))
 # mn <- activity$Interval %% 100 # e.g 2355 gives 55
 
 time.hms <- substr(as.POSIXct(sprintf("%04.0f", activity$Interval), format = '%H%M'), 12, 19)
-date.time <- as.POSIXct(paste(activity$Date,time.hms))
+date.time <- as.POSIXct(paste(activity$Date, time.hms))
 
 # transform Date variable to 'date' class and add d datetime column to activity
 activity <- mutate(activity, 
@@ -222,6 +222,30 @@ ts(activity$Steps,
 -->
 
 ### What is the average daily activity pattern?
+
+```{r ts.plot}
+# create ts object from the activity data frame
+
+# activity.ts <- ts(actsum$Mean,
+#                   start = c(year(min(actsum$Date)), yday(min(actsum$Date))),
+#                   # end = c(year(max(actsum$Date)), yday(max(actsum$Date))),
+#                   frequency = 365
+#                   )
+
+# activity.ts <- ts(activity$Steps,
+#                   start = c(1,1),
+#                   # end = c(61,288),
+#                   frequency = 12*24
+#                   )
+activity.ts <- ts(activity$Steps,
+                  start = c(as.numeric(as_date(min(activity$Time))), 1),
+                  # end = c(as.numeric(as_date(max(activity$Time))), 288),
+                  frequency = 12*24
+                  )
+
+activity.agg.ts <- aggregate(activity.ts, FUN = mean, na.action = na.omit)
+
+```
 
 
 k-nearest neighbour imputation method to replace the missing values found in the activity data set.
