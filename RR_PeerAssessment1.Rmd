@@ -39,12 +39,12 @@ The variables found in the data set are:
 1. download data set and unzip to designated directory.  
 2. take-a-peek at the unzipped data set to determine number of files, file type, data format and the presence of header...etc, to determine the  appropriate technique to process the 'raw' data into analytic data for downstream analysis.
 
-<!-- as.list(unzip(filetmp, list = TRUE)) #get file list -->
-<!-- length(filels$Name) #display number of files in the data set. -->
+<!-- as.list(unzip(filetmp, list = TRUE)) #get a list of file names -->
+<!-- length(filels$Name) #display number of files in the zip file -->
 <!-- filels$Name #display file name & file type. -->
 <!-- filels$Length #display physical file size -->
-<!-- length(readLines(filels$Name[i])) - 1 #display row count (text-file only) -->
 <!-- readLines(filels$Name[i], n = 5) #display first 5 lines. (text-file only) -->
+<!-- length(readLines(filels$Name[i])) - 1 #display row count (text-file only) -->
 
 ```{r data.load, message = FALSE}
 filetmp <- tempfile()
@@ -109,7 +109,7 @@ na.ratio <- mean(is.na(activity$steps)) +
 
 The 5-numbers summary of **activity** data set shows there are `r na.count` missing values (coded as NA), representing approx. `r percent(na.ratio)` missing values present in the data set. The ratio of missing values considered significant in this case which can skewed the outcomes of downstream analysis.
 
-Missing value distribution, not in the usual statistical distribution sense, simply reveals how the missing values are scattered in the data set.  
+Missing value distribution, not in the usual sense of statistical distribution, simply reveals how the missing values are scattered in the data set.  
 - **steps**: contains `r percent(colMeans(is.na(activity))[1])` missing value.  
 - **date**: `r percent(colMeans(is.na(activity))[2])`.  
 - **interval**: `r percent(colMeans(is.na(activity))[3])`.  
@@ -189,7 +189,7 @@ gr0 <- gr0 + scale_color_discrete(name = "Central Tendency")
 print(gr0)
 ```
 **
-The total number of steps taken per day by the anonymous are illustrated in the histogram, where each bar-column in the graph represents the total steps count recorded each day. The mean value ``r format(mean(actsum$Steps),nsmall=2)`` and median value ``r format(median(actsum$Steps),nsmall=2)`` of the steps count observations accumulated over the two months period as portrayed by the visual representation of the red and green horizontal lines overlaid on the histogram, hovering closely around the 10,000 mark indicate that the anonymous individual performed, on average, `10,000` steps per day in daily activities during the months of October and November, 2012.  
+The total number of steps taken per day by the anonymous are illustrated in the histogram, where each bar-column in the graph represents the total steps count recorded each day. The mean value ``r format(mean(actsum$Steps),nsmall=2)`` and median value ``r format(median(actsum$Steps),nsmall=2)`` of the steps count observations accumulated over the two months period as portrayed by the visual representation of the red and green horizontal lines overlaid on the histogram, hovering around the 10,000 mark indicate that the anonymous individual performed, on average ``r format(mean(actsum$Steps),nsmall=2)``, close to 10,000 steps per day in daily activities. The median floating slightly above the 10,000 mark is mainly attributed by significantly greater number of steps taken by the anonymous individual on certain days during the period.
 **
 &nbsp;
 
@@ -200,8 +200,14 @@ The total number of steps taken per day by the anonymous are illustrated in the 
 <!-- monthly        12 -->
 <!-- weekly         52 -->
 <!-- the frequency is the number of observations per cycle (normally a year, a week, a day or an hour). -->
-<!-- if the frequency of observation is greater than once per week, then there is usually  more than one way of handling the frequency. e.g. data with per minute observation might have an hourly seasonality (frequency = 1 x 60), a daily seasonality (frequency = 1 x 60 x 24), a weekly seasonality (frequency = 1 x 60 x 24 x 7) and an annually seasonality (frequency = 1 x 60 x 24 x 365.25) -->
+<!-- 
+if the frequency of observation is greater than once per week, then there is usually  more than one way of handling the frequency. e.g. data with per minute observation might have an hourly seasonality (frequency = 1 x 60), a daily seasonality (frequency = 1 x 60 x 24), a weekly seasonality (frequency = 1 x 60 x 24 x 7) and an annually seasonality (frequency = 1 x 60 x 24 x 365.25) 
 
+start param setting for ts()
+i.e. start(m,n) 
+where m = the number of the cycle depending on the frequency
+      n = the first incident in that cycle
+-->
 
 
 
