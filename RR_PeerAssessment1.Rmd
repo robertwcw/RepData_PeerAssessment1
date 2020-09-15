@@ -235,7 +235,7 @@ ts(activity,
 
 ### What is the average daily activity pattern?
 
-```{r ts.mean.plot}
+```{r ts0.plot, include=FALSE, echo=FALSE, results="hide"}
 # time series plot for daily activity pattern
 
 pal <- c(rgb(0,0,1), rgb(0,1,0), rgb(1,0,0), rgb(1,0,1), rgb(1,1,0), rgb(0,1,1))
@@ -245,7 +245,7 @@ activity.ts <- aggregate(Steps ~ Interval, data = activity, FUN = mean)
 par(cex.axis = 0.8, las = 2)
 plot(activity.ts, type = "l", col = "royalblue3")
 h <- activity.ts[which(activity.ts$Steps == max(activity.ts$Steps)),]
-abline(v = h$Interval, col = pal[4])
+abline(v = h$Interval, col = pal[3])
 title(main = "Average Daily Activities Pattern", 
       # sub = "( data points plotted @ 5-min interval )",
       xlab = "Time Interval", 
@@ -254,22 +254,18 @@ title(main = "Average Daily Activities Pattern",
       cex.sub = 0.7)
 ```
 
-```{r ts.plot, include=FALSE, echo=FALSE, results="hide"}
+```{r ts.plot}
 # time series plot for daily activity pattern
 
-# create time series object from 5-min interval seasonality data
-activity.ts <- ts(activity,
-                  start = c(1,1),
-                  frequency = 12*24
-                  )
+activity.ts <- ts(aggregate(Steps ~ Interval, data = activity, FUN = mean))
+
+pal <- c(rgb(0,0,1), rgb(0,1,0), rgb(1,0,0), rgb(1,0,1), rgb(1,1,0), rgb(0,1,1))
 
 par(cex.axis = 0.8, las = 2, ann = FALSE)
-plot(activity.ts[,1] ~ activity.ts[,3], type = "l", col = "royalblue3")
-h <- aggregate(activity.ts[,1] ~ activity.ts[,3], FUN = mean)
-lines(h, type = "l", lwd = 1.5, col = pal[6])
-abline(v = h[which(h[,2] == max(h[,2])),1], col = pal[4])
+plot(activity.ts[,2] ~ activity.ts[,1], type = "l", col = "royalblue3")
+h <- activity.ts[which(activity.ts[,2] == max(activity.ts[,2])),]
+abline(v = h[1], col = pal[3])
 title(main = "Average Daily Activities Pattern", 
-      # sub = "( data points plotted @ 5-min interval )",
       xlab = "Time Interval", 
       ylab = "Steps Count",
       cex = 0.9,
