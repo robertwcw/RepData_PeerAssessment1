@@ -294,7 +294,8 @@ activity.imputed <- mutate(activity.imputed, Time = activity$Time)
 # create imputed daily activity summary
 actsum <- activity.imputed %>% 
                 select(Date, Steps) %>%
-                mutate(Mean = as.numeric(0),
+                mutate(Date = as_date(Date),
+                       Mean = as.numeric(0),
                        Median = as.numeric(0)) %>%
               group_by(Date) %>% 
              summarise(Mean = mean(Steps),
