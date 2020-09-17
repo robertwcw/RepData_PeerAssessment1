@@ -47,7 +47,7 @@ The variables found in the data set are:
 <!-- length(readLines(filels$Name[i])) - 1 #display row count (text-file only) -->
 
 ```{r data.load, message = FALSE}
-# data loading
+# begin data loading
 
 filetmp <- tempfile()
 datadir <- paste(".", "data", sep = "/")
@@ -122,7 +122,7 @@ rm(na.count, na.ratio)
 ```
 
 ```{r data.prep} 
-# data preparation
+# begin data preparation
 
 names(activity) <- strCap(names(activity))  # capitalize variable names.
 
@@ -157,6 +157,7 @@ rm(time.hms, date.time)
 There are missing bar-columns *( for dates Oct-01, Oct-08, Nov-01, Nov-04, Nov-09, Nov-10, Nov-14 and Nov-30 )* in the histogram due to the presence of missing values in the data set as mentioned.
 
 ```{r steps.hist.plot}
+# begin daily activity hisogram plot
 
 h <- hist(actsum$Date, breaks = "days", freq = FALSE, plot = FALSE)
 h$counts <- actsum$Steps
@@ -166,7 +167,6 @@ plot(h, xaxt = "n", ann = FALSE, col = "grey")
 axis(1, at = seq(h$breaks[1], h$breaks[length(h$breaks)], by = 5), 
      labels = c(format(as.Date(seq(h$breaks[1], h$breaks[length(h$breaks)], 
                                    by = 5 ), origin = "1970-01-01"), "%b-%d")))
-
 abline(h = mean(actsum$Steps), col = "red")
 abline(h = median(actsum$Steps), col = "green")
 legend("topleft", legend = c("Mean", "Median"), 
@@ -176,9 +176,13 @@ title(main = "Number of Steps Taken Per Day",
       xlab = "Date", 
       ylab = "Daily Steps Count",
       cex = 1)
+
+# end of daily activity histogram plot
 ```
 
 ```{r steps.hist.ggplot, include=FALSE, echo=FALSE, results="hide"}
+# begin daily steps histogram ggplot
+
 # gr0 <- ggplot(actsum, aes(x = Date, y = Steps, fill = Steps))
 gr0 <- ggplot(actsum, aes(x = Date, y = Steps))
 gr0 <- gr0 + geom_col()
@@ -195,6 +199,8 @@ gr0 <- gr0 + geom_hline(data = actsum,
                         aes(yintercept = median(Steps), col = "Median"))
 gr0 <- gr0 + scale_color_discrete(name = "Central Tendency")
 print(gr0)
+
+# end of daily activity histogram ggplot
 ```
 **
 The total number of steps taken per day by the anonymous are illustrated in the histogram, where each bar in the graph represents the total steps count recorded each day. The mean and median of the steps count observations accumulated over the two months period as portrayed by the visual representation of the red and green horizontal lines overlaid on the histogram, hovering around the 10,000 mark indicate that the anonymous individual performed, on average ``r format(mean(actsum$Steps),nsmall=2)``, close to 10,000 steps per day in daily activities. The median value ``r format(median(actsum$Steps),nsmall=2)`` floating slightly above the 10,000 mark.
@@ -273,11 +279,28 @@ title(main = "Average Daily Activities Pattern",
 ```
 
 
-k-nearest neighbour imputation method to replace the missing values found in the activity data set.
+k-nearest neighbour imputation method to impute the missing values found in the activity data set.
+k = sqrt(17568)/2, generally accepted method to determine k-value for knn.impute()
+
 ```{r data.impute}
-# library(impute)
-# imputed.activity <- impute.knn(data.matrix(activity), k = 15)$data
-# detach("package:impute", unload = TRUE)
+
+library(impute)
+activity.imputed <- impute.knn(data.matrix(activity[,1:3]), k = 65)$data
+detach("package:impute", unload = TRUE)
+
+activity.imputed <- as.data.frame(activity.imputed)
+activity.imputed <- mutate(activity.imputed, Time = activity$Time)
+
+# create imputed daily activity summary
+actsum <- activity.imputed %>% 
+                select(Date, Steps) %>%
+                mutate(Mean = as.numeric(0),
+                       Median = as.numeric(0)) %>%
+              group_by(Date) %>% 
+             summarise(Mean = mean(Steps),
+                       Median = median(Steps),
+                       Steps = sum(Steps))
+
 ```
 
 5-numbers summary on 'activity' data set reveals that missing values 'NA' had been imputed with k-nearest neighbour imputation method where k = 15 is used.
@@ -287,6 +310,29 @@ k-nearest neighbour imputation method to replace the missing values found in the
 # colMeans(activity)
 ```
 
+```{r imputed.activity.hist.plot}
+# begin imputed daily activity histogram plot
+
+h <- hist(actsum$Date, breaks = "days", freq = FALSE, plot = FALSE)
+h$counts <- actsum$Steps
+
+par(cex.axis = 0.8, las = 2)
+plot(h, xaxt = "n", ann = FALSE, col = "grey")
+axis(1, at = seq(h$breaks[1], h$breaks[length(h$breaks)], by = 5), 
+     labels = c(format(as.Date(seq(h$breaks[1], h$breaks[length(h$breaks)], 
+                                   by = 5 ), origin = "1970-01-01"), "%b-%d")))
+abline(h = mean(actsum$Steps), col = "red")
+abline(h = median(actsum$Steps), col = "green")
+legend("topleft", legend = c("Mean", "Median"), 
+       lty = c(1,1,1), col = c("red","green"), cex = 0.75)
+title(main = "Number of Steps Taken Per Day", 
+      sub = "( Year 2012 )",
+      xlab = "Date", 
+      ylab = "Daily Steps Count",
+      cex = 1)
+
+# end of imputed daily activity histogram plot
+```
 
 
 
