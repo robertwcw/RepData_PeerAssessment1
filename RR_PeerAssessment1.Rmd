@@ -133,8 +133,8 @@ names(activity) <- strCap(names(activity))  # capitalize variable names.
 time.hms <- substr(as.POSIXct(sprintf("%04.0f", activity$Interval), format = '%H%M'), 12, 19)
 date.time <- as.POSIXct(paste(activity$Date, time.hms))
 activity <- activity %>%
-                mutate(activity, Date = as.Date(Date), Time = date.time) %>%
-                arrange(Time)
+            mutate(Date = as.Date(Date), Time = date.time) %>%
+            arrange(Time)
 
 # create daily activity summary
 actsum <- activity %>% 
@@ -159,7 +159,7 @@ There are missing bar-columns *( for dates Oct-01, Oct-08, Nov-01, Nov-04, Nov-0
 ```{r steps.hist.plot}
 # begin daily activity hisogram plot
 
-h <- hist(actsum$Date, breaks = "days", freq = FALSE, plot = FALSE)
+h <- hist(actsum$Date_num, breaks = "days", freq = FALSE, plot = FALSE)
 h$counts <- actsum$Steps
 
 par(cex.axis = 0.8, las = 2)
@@ -277,7 +277,9 @@ title(main = "Average Daily Activities Pattern",
       cex = 0.9,
       cex.sub = 0.7)
 ```
+&nbsp;
 
+### Imputing missing values
 
 k-nearest neighbour imputation method to impute the missing values found in the activity data set.
 k = sqrt(17568)/2, generally accepted method to determine k-value for knn.impute()
@@ -291,17 +293,6 @@ detach("package:impute", unload = TRUE)
 activity.imputed <- as.data.frame(activity.imputed)
 activity.imputed <- mutate(activity.imputed, Time = activity$Time)
 
-# create imputed daily activity summary
-actsum <- activity.imputed %>% 
-                select(Date, Steps) %>%
-                mutate(Date = as_date(Date),
-                       Mean = as.numeric(0),
-                       Median = as.numeric(0)) %>%
-              group_by(Date) %>% 
-             summarise(Mean = mean(Steps),
-                       Median = median(Steps),
-                       Steps = sum(Steps))
-
 ```
 
 5-numbers summary on 'activity' data set reveals that missing values 'NA' had been imputed with k-nearest neighbour imputation method where k = 15 is used.
@@ -313,6 +304,17 @@ actsum <- activity.imputed %>%
 
 ```{r imputed.activity.hist.plot}
 # begin imputed daily activity histogram plot
+
+# create imputed daily activity summary
+actsum <- activity.imputed %>% 
+                select(Date, Steps) %>%
+                mutate(Date = as_date(Date),
+                       Mean = as.numeric(0),
+                       Median = as.numeric(0)) %>%
+              group_by(Date) %>% 
+             summarise(Mean = mean(Steps),
+                       Median = median(Steps),
+                       Steps = sum(Steps))
 
 h <- hist(actsum$Date, breaks = "days", freq = FALSE, plot = FALSE)
 h$counts <- actsum$Steps
@@ -334,8 +336,21 @@ title(main = "Number of Steps Taken Per Day",
 
 # end of imputed daily activity histogram plot
 ```
+&nbsp;
+
+### Activity pattern between weekdays and weekends
+
+```{r}
+
+dow <- wday(as_date(activity.imputed$Date), week_start = 1)
+activity.imputed <- activity.imputed %>% 
+        mutate(wday_type = as.factor(if_else(dow %in% c(6,7),"weekend","weekday")))
+rm(dow)
+
+activity.imputed <- activity.imputed %>% group_by(wday_type)
 
 
+```
 
 ```{r house.keeping}
 # detach("package:ggplot2", unload = TRUE)
