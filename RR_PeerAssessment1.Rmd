@@ -268,18 +268,18 @@ boxplot(activity.ts[,2], ylab = "intreval average step count")
 hist(activity.ts[,2], main = NULL, xlab = "interval average step count")
 ```
 
-The visual representation (above) of the *average daily activity data* shows the least number (lowest frequency) of observations data having step count close to 200 average step count as depicted in the histogram. Boxplot graph also confirms similar event where there are two data points hovering around the 200 average step count mark. Therefore, we can affirm that the unusual huge spike in the Average Daily Activity Pattern time series graph is caused by this data circumstance.
+As shown in the Boxplot (left) and histogram (right) above, least number of observations data points revolving around the average 200-step count mark affirm the unusual huge spike exhibited in the Average Daily Activity Pattern time series graph plot is the result of this data circumstance.
 &nbsp;
 
 ### Imputing Missing Values
 
-As reported earlier, there are `r na.count` missing values (coded as NA), constituting `r percent(na.ratio)` out of the total observation data in the **activity** data set. 
+As mentioned earlier, there are `r na.count` or `r percent(na.ratio)` missing values (coded as NA) found in the **activity** data set. 
 
 - **steps** variable: contains `r percent(colMeans(is.na(activity))[1])` missing value.  
 - **date** variable: `r percent(colMeans(is.na(activity))[2])`.  
 - **interval** variable: `r percent(colMeans(is.na(activity))[3])`.  
 
-The present of missing values will induce biased results in the analysis.  Henceforth, K-Nearest Neighbour (knn) algorithm is employed to impute the missing values in the data set, as knn imputation method is well accepted in the community among the practitioners.
+The present of missing values will induce biased results in the analysis.  Henceforth, K-Nearest Neighbour (knn) algorithm is employed to impute missing values in the data set, as knn imputation method is well accepted in the community among the practitioners.
 
 <!-- 
 Generally accepted approach to determine k-value for knn.impute() base on internet search.
@@ -287,7 +287,7 @@ k = sqrt(17568)/2
 where number of observations = 17568
 -->
 <!-- Imputing missing values in data set using knn.impute() -->
-```{r, results = "hide"}
+```{r, message=FALSE, results = "hide"}
 # knn.impute() function
 library(impute)
 activity.imputed <- impute.knn(data.matrix(activity[,1:3]), k = 65)$data
@@ -308,7 +308,7 @@ actsum <- activity.imputed %>%
                        Steps = sum(Steps))
 ```
 
-5-numbers summary of the imputed **activity** data set shows that the missing values had been imputed.  
+5-numbers summary of imputed **activity** data set shows that missing values had been imputed with k number of nearest neighbour data values.  
 
 ```{r}
 summary(activity.imputed[1:3])
@@ -335,13 +335,12 @@ title(main = "Number of Steps Taken Per Day",
       ylab = "Daily Step Count",
       cex = 1)
 ```
-
+Histogram **Number of Steps Taken Per Day** plotted using imputed **activity** data set 
 &nbsp;
 
 ### Activity pattern between weekdays and weekends
-
+<!-- Activity Pattern between Weekday & Weekend plot using lattice graphic -->
 ```{r}
-# Activity Pattern between Weekday & Weekend plot using lattice graphic
 
 library(lattice)
 
