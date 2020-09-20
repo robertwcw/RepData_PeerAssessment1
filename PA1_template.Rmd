@@ -4,17 +4,17 @@ output: html_document
 keep_md: true
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-    Sys.setenv(TZ = "UTC")  # set global TZ for POSIXt class
-	.Rfliburl <- "https://raw.githubusercontent.com/robertwcw/Rflib/master"
-	source(file.path(.Rfliburl,"getRflib.R"),local = TRUE)
-	source(getRflib("is.defined.R"),local = TRUE)
-	source(getRflib("myplclust.R"),local = TRUE)
-	source(getRflib("strCap.R"),local = TRUE)
-	library(dplyr, warn.conflicts = TRUE, quietly = TRUE)
-	library(lubridate, warn.conflicts = TRUE, quietly = TRUE)
-	library(scales, warn.conflicts = TRUE, quietly = TRUE)
+Sys.setenv(TZ = "UTC")  # set global TZ for POSIXt class
+.Rfliburl <- "https://raw.githubusercontent.com/robertwcw/Rflib/master"
+source(file.path(.Rfliburl,"getRflib.R"),local = TRUE)
+source(getRflib("is.defined.R"),local = TRUE)
+source(getRflib("myplclust.R"),local = TRUE)
+source(getRflib("strCap.R"),local = TRUE)
+library(dplyr, warn.conflicts = TRUE, quietly = TRUE)
+library(lubridate, warn.conflicts = TRUE, quietly = TRUE)
+library(scales, warn.conflicts = TRUE, quietly = TRUE)
 ```
 &nbsp;
 
@@ -29,7 +29,7 @@ Each row in the data set consists of three variables recorded the total number o
 The variables found in the data set are:  
 1. **steps**: Number of steps taken by the anonymous individual in 5-minute interval.  
 2. **date**: The date (YYYY-MM-DD) which the measurements were taken.  
-3. **interval**: Identifier for the 5-minute interval for which the observation was captured.
+3. **interval**: Identifier for the 5-minute interval for which the observation was captured.  
 &nbsp;
 
 ### Loading and Preprocessing Data
@@ -74,7 +74,7 @@ rm(filetmp, fileurl, filein, filesrc, i)
 
 One data set named **activity** was extracted from the downloaded zip file and loaded into R.  
 
-Data structure of **activity** data set:
+Structure of **activity** data set:
 ```{r}
 str(activity)
 ```
@@ -84,7 +84,7 @@ str(activity)
   + **date**: character class.
   + **interval**: integer class.
   
-Take note that the variable **date** shall belonged to the date class data type instead of the current character class data type in  which date values are stored as character string. Time-series related analysis requires that the **date** variable be transformed into formal date class vector to warrant proper analysis.  
+Take note that the variable **date** shall belonged to the date class data type instead of the current character class data type in  which date values are stored as character string. Time-series related analysis requires that the **date** variable be transformed into formal date class vector to warrant proper analysis.
 &nbsp;
 
 *5-numbers summary*
@@ -189,7 +189,7 @@ gr0 <- gr0 + scale_color_discrete(name = "Central Tendency")
 print(gr0)
 ```
 
-The total number of steps taken per day by the anonymous are illustrated in the histogram, where each bar in the graph represents the total step count recorded each day. The mean and median of the step count observations accumulated over the two months period as portrayed by the visual representation of the red and green horizontal lines overlaid on the histogram, hovering around the 10,000 mark indicate the anonymous individual performed, on average `r format(mean(actsum$Steps),nsmall=2)` steps, close to 10,000 steps per day in daily activities. The median value `r format(median(actsum$Steps),nsmall=2)` hovering slightly above the 10,000 mark. However, the daily mean and daily median are about 1000 steps apart from each other or about 10% of the mean/median indicate there is some abnormality in the data set.
+The total number of steps taken per day by the anonymous are illustrated in the histogram, where each bar in the graph represents the total step count recorded each day. The mean and median of the step count observations accumulated over the two months period as portrayed by the visual representation of the red and green horizontal lines overlaid on the histogram, hovering around the 10,000 mark indicate the anonymous individual performed, on average `r format(mean(actsum$Steps),nsmall=2)` steps, close to 10,000 steps per day in daily activities. The median value `r format(median(actsum$Steps),nsmall=2)` hovering slightly above the 10,000 mark. However, the daily mean and daily median are about 1000 steps apart from each other or about 10% of the mean/median indicate there is some abnormality in the data set.  
 &nbsp;
 
 <!-- 
@@ -270,7 +270,7 @@ boxplot(activity.ts[,2], ylab = "average step count by interval")
 hist(activity.ts[,2], main = NULL, xlab = "average step count by interval")
 ```
 
-As shown in the Boxplot (left) and histogram (right) above, least number of data point or lowest frequency beyond the average 200-step count mark affirmed the unusual sharp spike exhibited in the Average Daily Activity Pattern time series graph plot.
+As shown in the Boxplot (left) and histogram (right) above, least number of data point or lowest frequency beyond the average 200-step count mark affirmed the unusual sharp spike exhibited in the Average Daily Activity Pattern time series graph plot.  
 &nbsp;
 
 ### Imputing Missing Values
@@ -339,7 +339,7 @@ title(main = "Number of Steps Taken Per Day",
 ```
 
 The histogram for **Number of Steps Taken Per Day** plotted using imputed *average daily activity data*, compared to the previous histogram of the same based on pre-imputed data, proximity of both the mean value `r format(mean(actsum$Steps),nsmall=2)` and median value `r format(median(actsum$Steps),nsmall=2)` have become fairly close together as indicated by the red horizontal line and green horizontal line respectively. Note the mean line is now moved up the scale to above the 10000-step mark in contrast to the median line remain unchanged, the shift in central values to become much closer to each other explain the *average daily activity data* sorted by date in descending order derived from the imputed data set had attained improved normal (symmetrical) distribution.
-&nbsp;
+&nbsp;  
 
 ### Are there differences in activity patterns between weekdays and weekends?
 
@@ -364,7 +364,6 @@ xyplot(Steps ~ Interval | DoW, data = activity.imputed.ts,
 ```
 
 There is apparent difference observed in the time series plot for Weekend vs Weekday. The average activity paces are more intense overall across the weekends than weekdays where paces are more sedate comparatively except 0800 ~ 0900 hour. The anonymous individual tends to pick up paces later starting at 0800 ~ 0900 for the weekends as oppose to weekdays, and winding-down later than normally does during weekdays beginning at 2000 hour for the day during weekends.   
-
 &nbsp;
 
 <!-- ```{r house.keeping} -->
