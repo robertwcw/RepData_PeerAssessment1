@@ -6,7 +6,8 @@ output:
     keep_md: yes
 ---
 
-```{r setup, include=TRUE, message=FALSE}
+
+```r
 knitr::opts_chunk$set(echo = TRUE)
 Sys.setenv(TZ = "UTC")      # set global TZ for POSIXt class
 .Rfliburl <- "https://raw.githubusercontent.com/robertwcw/Rflib/master"
@@ -47,7 +48,8 @@ The variables found in the data set are:
 <!-- length(readLines(filels$Name[i])) - 1 #display row count (text-file only) -->
 
 <!-- download data set from internet source and load into R environment -->
-```{r, message = FALSE}
+
+```r
 filetmp <- tempfile()
 datadir <- paste(".", "data", sep = "/")
 fileurl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
@@ -77,8 +79,16 @@ rm(filetmp, fileurl, filein, filesrc, i)
 One data set named **activity** was extracted from the downloaded zip file and loaded into R.  
 
 Structure of **activity** data set:
-```{r}
+
+```r
 str(activity)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : chr  "2012-10-01" "2012-10-01" "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 
 * **activity** variable data type.
@@ -90,33 +100,45 @@ Take note that the variable **date** shall belonged to the date class data type 
 &nbsp;
 
 *5-numbers summary*
-```{r}
+
+```r
 summary(activity)
+```
+
+```
+##      steps            date              interval     
+##  Min.   :  0.00   Length:17568       Min.   :   0.0  
+##  1st Qu.:  0.00   Class :character   1st Qu.: 588.8  
+##  Median :  0.00   Mode  :character   Median :1177.5  
+##  Mean   : 37.38                      Mean   :1177.5  
+##  3rd Qu.: 12.00                      3rd Qu.:1766.2  
+##  Max.   :806.00                      Max.   :2355.0  
+##  NA's   :2304
 ```
 &nbsp;
 *Missing value distribution*
-```{r}
+
+```r
 colMeans(is.na(activity))
 ```
-<!-- workout the sum and mean of missing values for each column variable -->
-```{r, echo = FALSE, results = "hide"}
-na.count <- sum(is.na(activity$steps)) + 
-            sum(is.na(activity$date)) + 
-            sum(is.na(activity$interval))
-na.ratio <- mean(is.na(activity$steps)) +
-            mean(is.na(activity$date)) +
-            mean(is.na(activity$interval))
-```
 
-The 5-numbers summary of **activity** data set shows there are `r na.count` missing values (coded as NA), representing approx. `r percent(na.ratio)` missing values present in the data set. The ratio of missing values considered significant in this case which can skewed the outcomes of downstream analysis.
+```
+##     steps      date  interval 
+## 0.1311475 0.0000000 0.0000000
+```
+<!-- workout the sum and mean of missing values for each column variable -->
+
+
+The 5-numbers summary of **activity** data set shows there are 2304 missing values (coded as NA), representing approx. 13% missing values present in the data set. The ratio of missing values considered significant in this case which can skewed the outcomes of downstream analysis.
 
 Missing value distribution, not in the usual sense of statistical distribution, simply reveals how the missing values are scattered within the data set.  
-- **steps**: contains `r percent(colMeans(is.na(activity))[1])` missing value.  
-- **date**: `r percent(colMeans(is.na(activity))[2])`.  
-- **interval**: `r percent(colMeans(is.na(activity))[3])`.  
+- **steps**: contains 13% missing value.  
+- **date**: 0%.  
+- **interval**: 0%.  
 
 <!-- pre-processing data set  -->
-```{r, message=FALSE, results="hide"}
+
+```r
 # Pre-processing data for downstream analysis
 
 names(activity) <- strCap(names(activity))  # capitalize variable names.
@@ -149,7 +171,8 @@ rm(time.hms, date.time)
 
 There are some missing column-bars *( for dates Oct-01, Oct-08, Nov-01, Nov-04, Nov-09, Nov-10, Nov-14 and Nov-30 )* in the histogram due to the presence of missing values in the data set as mentioned.
 <!-- histogram for Total Number of Steps Taken Per Day using base graphic -->
-```{r}
+
+```r
 h <- hist(actsum$Date, breaks = "days", freq = FALSE, plot = FALSE)
 h$counts <- actsum$Steps
 
@@ -168,30 +191,13 @@ title(main = "Number of Steps Taken Per Day",
       ylab = "Daily Step Count",
       cex = 1)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 <!-- histogram for Total Number of Steps Taken Per Day using ggplot2 graphic -->
 <!-- NOT USE & HIDDEN FROM FINAL OUTPUT -->
-```{r, message=FALSE, include=FALSE, echo=FALSE, results="hide"}
-library(ggplot2, warn.conflicts = TRUE, quietly = TRUE)
 
-# gr0 <- ggplot(actsum, aes(x = Date, y = Steps, fill = Steps))
-gr0 <- ggplot(actsum, aes(x = Date, y = Steps))
-gr0 <- gr0 + geom_col()
-gr0 <- gr0 + scale_x_date(breaks = breaks_pretty(11))
-gr0 <- gr0 + theme(plot.title = element_text(hjust = 0.5),
-                   plot.subtitle = element_text(hjust = 0.5),
-                   axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-gr0 <- gr0 + labs(title = "Number of Steps Taken Per Day",
-                  subtitle = "(October & November, 2012)")
-gr0 <- gr0 + xlab("Date") + ylab("Daily Step Count")
-gr0 <- gr0 + geom_hline(data = actsum,
-                        aes(yintercept = mean(Steps), col = "Mean"))
-gr0 <- gr0 + geom_hline(data = actsum,
-                        aes(yintercept = median(Steps), col = "Median"))
-gr0 <- gr0 + scale_color_discrete(name = "Central Tendency")
-print(gr0)
-```
 
-The total number of steps taken per day by the anonymous are illustrated in the histogram, where each bar in the graph represents the total step count recorded each day. The mean and median of the step count observations accumulated over the two months period as portrayed by the visual representation of the red and green horizontal lines overlaid on the histogram, hovering around the 10,000 mark indicate the anonymous individual performed, on average `r format(mean(actsum$Steps),nsmall=2)` steps, close to 10,000 steps per day in daily activities. The median value `r format(median(actsum$Steps),nsmall=2)` hovering slightly above the 10,000 mark. However, the daily mean and daily median are about 1000 steps apart from each other or about 10% of the mean/median indicate there is some abnormality in the data set.  
+The total number of steps taken per day by the anonymous are illustrated in the histogram, where each bar in the graph represents the total step count recorded each day. The mean and median of the step count observations accumulated over the two months period as portrayed by the visual representation of the red and green horizontal lines overlaid on the histogram, hovering around the 10,000 mark indicate the anonymous individual performed, on average 9354.23 steps, close to 10,000 steps per day in daily activities. The median value 10395 hovering slightly above the 10,000 mark. However, the daily mean and daily median are about 1000 steps apart from each other or about 10% of the mean/median indicate there is some abnormality in the data set.  
 &nbsp;
 
 <!-- 
@@ -230,24 +236,10 @@ ts(activity,
 
 <!-- Average Daily Activity Pattern plot using base graphic -->
 <!-- Not Use and Hidden from  final output -->
-```{r, include=FALSE, echo=FALSE, results="hide"}
-pal <- c(rgb(0,0,1), rgb(0,1,0), rgb(1,0,0), rgb(1,0,1), rgb(1,1,0), rgb(0,1,1))
 
-activity.ts <- aggregate(Steps ~ Interval, data = activity, FUN = mean)
-
-par(cex.axis = 0.8, las = 2)
-plot(activity.ts, type = "l", col = "royalblue3")
-h <- activity.ts[which(activity.ts$Steps == max(activity.ts$Steps)),]
-abline(v = h$Interval, col = pal[3])
-title(main = "Average Daily Activity Pattern", 
-      # sub = "( data points plotted @ 5-min interval )",
-      xlab = "Time Interval", 
-      ylab = "Step Count",
-      cex = 0.9,
-      cex.sub = 0.7)
-```
 <!-- Time-series plot for Average Daily Activity Pattern using base graphic  -->
-```{r}
+
+```r
 pal <- c(rgb(0,0,1), rgb(0,1,0), rgb(1,0,0), rgb(1,0,1), rgb(1,1,0), rgb(0,1,1))
 
 activity.ts <- ts(aggregate(Steps ~ Interval, data = activity, FUN = mean))
@@ -263,25 +255,30 @@ title(main = "Average Daily Activity Pattern",
       cex.sub = 0.7)
 ```
 
-The average daily activity pattern time-series plot shows the anonymous individual's daily activity pick up pace starting 0600 hour lasted for 13 hours, paces begin to wind-down from 1900 hour onward and gradually slow down to negligible level at around 2130 hour continuing forward. There is a noticeable sharp spike (red color vertical line) in the average activity at `r sprintf("%04.0f", h[1])` hour to `r format(h[2],nsmall=2)` steps, which is double the maximum average step count of 100 for most part of the day.
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+The average daily activity pattern time-series plot shows the anonymous individual's daily activity pick up pace starting 0600 hour lasted for 13 hours, paces begin to wind-down from 1900 hour onward and gradually slow down to negligible level at around 2130 hour continuing forward. There is a noticeable sharp spike (red color vertical line) in the average activity at 0835 hour to 206.1698 steps, which is double the maximum average step count of 100 for most part of the day.
 &nbsp;
 
-```{r}
+
+```r
 par(mfrow = c(1,2))
 boxplot(activity.ts[,2], ylab = "average step count by interval")
 hist(activity.ts[,2], main = NULL, xlab = "average step count by interval")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 
 As shown in the Boxplot (left) and histogram (right) above, least number of data point or lowest frequency beyond the average 200-step count mark affirmed the unusual sharp spike exhibited in the Average Daily Activity Pattern time series graph plot.  
 &nbsp;
 
 ### Imputing Missing Values
 
-As mentioned earlier, there are `r na.count` or `r percent(na.ratio)` missing values (coded as NA) found in the **activity** data set. 
+As mentioned earlier, there are 2304 or 13% missing values (coded as NA) found in the **activity** data set. 
 
-- **steps** variable: contains `r percent(colMeans(is.na(activity))[1])` missing value.  
-- **date** variable: `r percent(colMeans(is.na(activity))[2])`.  
-- **interval** variable: `r percent(colMeans(is.na(activity))[3])`.  
+- **steps** variable: contains 13% missing value.  
+- **date** variable: 0%.  
+- **interval** variable: 0%.  
 
 The present of missing values will induce biased analysis outcomes. Therefore K-Nearest Neighbour (knn) algorithm is employed to impute missing values in the data set, as knn imputation method is well accepted in the community among the practitioners.
 
@@ -291,7 +288,8 @@ k = sqrt(17568)/2
 where number of observations = 17568
 -->
 <!-- Imputing missing values in data set using knn.impute() -->
-```{r, message=FALSE, results = "hide"}
+
+```r
 # knn.impute() function
 library(impute)
 
@@ -314,13 +312,33 @@ actsum <- activity.imputed %>%
 
 5-numbers summary of imputed **activity** data set shows that missing values had been imputed with k-nearest neighbour data values.  
 
-```{r}
+
+```r
 summary(activity.imputed[1:3])
+```
+
+```
+##      Steps             Date          Interval     
+##  Min.   :  0.00   Min.   :15614   Min.   :   0.0  
+##  1st Qu.:  0.00   1st Qu.:15629   1st Qu.: 588.8  
+##  Median :  0.00   Median :15644   Median :1177.5  
+##  Mean   : 35.16   Mean   :15644   Mean   :1177.5  
+##  3rd Qu.: 18.00   3rd Qu.:15659   3rd Qu.:1766.2  
+##  Max.   :806.00   Max.   :15674   Max.   :2355.0
+```
+
+```r
 colMeans(is.na(activity.imputed[1:3]))
 ```
 
+```
+##    Steps     Date Interval 
+##        0        0        0
+```
+
 <!-- Histogram of Total number of Steps per day from imputed data using base graphic -->
-```{r}
+
+```r
 h <- hist(actsum$Date, breaks = "days", freq = FALSE, plot = FALSE)
 h$counts <- actsum$Steps
 
@@ -340,13 +358,16 @@ title(main = "Number of Steps Taken Per Day",
       cex = 1)
 ```
 
-The histogram for **Number of Steps Taken Per Day** plotted using imputed *average daily activity data*, compared to the previous histogram of the same based on pre-imputed data, proximity of both the mean value `r format(mean(actsum$Steps),nsmall=2)` and median value `r format(median(actsum$Steps),nsmall=2)` have become fairly close together as indicated by the red horizontal line and green horizontal line respectively. Note the mean line is now moved up the scale to above the 10000-step mark in contrast to the median line remain unchanged, the shift in central values to become much closer to each other explain the *average daily activity data* sorted by date in descending order derived from the imputed data set had attained improved normal (symmetrical) distribution.  
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+
+The histogram for **Number of Steps Taken Per Day** plotted using imputed *average daily activity data*, compared to the previous histogram of the same based on pre-imputed data, proximity of both the mean value 10126.67 and median value 10395.00 have become fairly close together as indicated by the red horizontal line and green horizontal line respectively. Note the mean line is now moved up the scale to above the 10000-step mark in contrast to the median line remain unchanged, the shift in central values to become much closer to each other explain the *average daily activity data* sorted by date in descending order derived from the imputed data set had attained improved normal (symmetrical) distribution.  
 &nbsp;  
 
 ### Are there differences in activity patterns between weekdays and weekends?
 
 <!-- Activity Pattern between Weekday & Weekend plot using lattice graphic -->
-```{r, message=FALSE}
+
+```r
 library(lattice)
 
 dow <- if_else(wday(as_date(activity.imputed$Date)) 
@@ -364,6 +385,8 @@ xyplot(Steps ~ Interval | DoW, data = activity.imputed.ts,
        main = "Activity Pattern between Weekday & Weekend",
        ylab = "Step Count ( average )")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
 
 There are apparent differences observed in the time series plot for Weekend vs Weekday. The average activity paces are more intense overall across the weekends than weekdays where paces are more sedate comparatively except 0800 ~ 0900 hour. The anonymous individual tends to pick up paces later starting at 0800 ~ 0900 for the weekends as oppose to weekdays, and winding-down later than normally does during weekdays beginning at 2000 hour for the day during weekends.   
 &nbsp;
