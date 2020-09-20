@@ -6,7 +6,7 @@ keep_md: true
 
 ```{r setup, include=TRUE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-Sys.setenv(TZ = "UTC")  # set global TZ for POSIXt class
+Sys.setenv(TZ = "UTC")      # set global TZ for POSIXt class
 .Rfliburl <- "https://raw.githubusercontent.com/robertwcw/Rflib/master"
 source(file.path(.Rfliburl,"getRflib.R"),local = TRUE)
 source(getRflib("is.defined.R"),local = TRUE)
@@ -363,7 +363,7 @@ xyplot(Steps ~ Interval | DoW, data = activity.imputed.ts,
        ylab = "Step Count ( average )")
 ```
 
-There is apparent difference observed in the time series plot for Weekend vs Weekday. The average activity paces are more intense overall across the weekends than weekdays where paces are more sedate comparatively except 0800 ~ 0900 hour. The anonymous individual tends to pick up paces later starting at 0800 ~ 0900 for the weekends as oppose to weekdays, and winding-down later than normally does during weekdays beginning at 2000 hour for the day during weekends.   
+There are apparent differences observed in the time series plot for Weekend vs Weekday. The average activity paces are more intense overall across the weekends than weekdays where paces are more sedate comparatively except 0800 ~ 0900 hour. The anonymous individual tends to pick up paces later starting at 0800 ~ 0900 for the weekends as oppose to weekdays, and winding-down later than normally does during weekdays beginning at 2000 hour for the day during weekends.   
 &nbsp;
 
 <!-- ```{r house.keeping} -->
