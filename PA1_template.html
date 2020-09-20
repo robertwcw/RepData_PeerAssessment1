@@ -366,6 +366,16 @@ summary {
 </div>
 
 
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE)
+Sys.setenv(TZ = &quot;UTC&quot;)  # set global TZ for POSIXt class
+.Rfliburl &lt;- &quot;https://raw.githubusercontent.com/robertwcw/Rflib/master&quot;
+source(file.path(.Rfliburl,&quot;getRflib.R&quot;),local = TRUE)
+source(getRflib(&quot;is.defined.R&quot;),local = TRUE)
+source(getRflib(&quot;myplclust.R&quot;),local = TRUE)
+source(getRflib(&quot;strCap.R&quot;),local = TRUE)
+library(dplyr, warn.conflicts = TRUE, quietly = TRUE)
+library(lubridate, warn.conflicts = TRUE, quietly = TRUE)
+library(scales, warn.conflicts = TRUE, quietly = TRUE)</code></pre>
 <p> </p>
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
