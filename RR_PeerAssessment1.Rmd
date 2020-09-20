@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 	library(dplyr, warn.conflicts = TRUE, quietly = TRUE)
 	library(lubridate, warn.conflicts = TRUE, quietly = TRUE)
 	library(scales, warn.conflicts = TRUE, quietly = TRUE)
+	par.default <- par()
 ```
 &nbsp;
 
@@ -163,6 +164,7 @@ title(main = "Number of Steps Taken Per Day",
       xlab = "Date", 
       ylab = "Daily Step Count",
       cex = 1)
+par(par.default)
 ```
 <!-- histogram for Total Number of Steps Taken Per Day using ggplot2 graphic -->
 <!-- NOT USE & HIDDEN FROM FINAL OUTPUT -->
@@ -241,6 +243,7 @@ title(main = "Average Daily Activity Pattern",
       ylab = "Step Count",
       cex = 0.9,
       cex.sub = 0.7)
+par(par.default)
 ```
 <!-- Time-series plot for Average Daily Activity Pattern using base graphic  -->
 ```{r}
@@ -257,18 +260,20 @@ title(main = "Average Daily Activity Pattern",
       ylab = "Average Step Count",
       cex = 0.9,
       cex.sub = 0.7)
+par(par.default)
 ```
 
-The average daily activity pattern time-series plot shows the anonymous individual's daily activity pick up pace starting 0600 hour lasted for 13 hours, begin to wind down from 1900 hour onward and the step count slow down gradually to negligible level at around 2130 hour continuing forward. There is a sharp spike (indicated by the red color vertical line) in the average activity protruded at ``r sprintf("%04.0f", h[1])`` hour to ``r print(h[2])`` steps, which is double the average step count of 100 for most part of the day.
+The average daily activity pattern time-series plot shows the anonymous individual's daily activity pick up pace starting 0600 hour lasted for 13 hours, begin to wind-down from 1900 hour onward and the step count slow down gradually to negligible level at around 2130 hour continuing forward. There is a sharp spike (indicated by the red color vertical line) in the average activity protruded at ``r sprintf("%04.0f", h[1])`` hour to ``r print(h[2])`` steps, which is double the average step count of 100 for most part of the day.
 &nbsp;
 
 ```{r}
 par(mfrow = c(1,2))
-boxplot(activity.ts[,2], ylab = "intreval average step count")
-hist(activity.ts[,2], main = NULL, xlab = "interval average step count")
+boxplot(activity.ts[,2], ylab = "average step count by interval")
+hist(activity.ts[,2], main = NULL, xlab = "average step count by interval")
+par(par.default)
 ```
 
-As shown in the Boxplot (left) and histogram (right) above, least number of observations data points revolving around the average 200-step count mark affirm the unusual sharp spike exhibited in the Average Daily Activity Pattern time series graph plot is the result of this data circumstance.
+As shown in the Boxplot (left) and histogram (right) above, least number of observation data point beyond the average 200-step count mark affirmed the unusual sharp spike exhibited in the Average Daily Activity Pattern time series graph plot.
 &nbsp;
 
 ### Imputing Missing Values
@@ -308,7 +313,7 @@ actsum <- activity.imputed %>%
                        Steps = sum(Steps))
 ```
 
-5-numbers summary of imputed **activity** data set shows that missing values had been imputed.  
+5-numbers summary of imputed **activity** data set shows that missing values had been imputed with k-nearest neighbour data values.  
 
 ```{r}
 summary(activity.imputed[1:3])
@@ -334,17 +339,20 @@ title(main = "Number of Steps Taken Per Day",
       xlab = "Date", 
       ylab = "Daily Step Count",
       cex = 1)
+par(par.default)
 ```
 
 The histogram for **Number of Steps Taken Per Day** plotted using imputed *average daily activity data*, compared to the first histogram of the same based on pre-imputed data, proximity of both the mean value `r format(mean(actsum$Steps),nsmall=2)` and median value `r format(median(actsum$Steps),nsmall=2)` have become fairly close together as indicated by the red horizontal line and green horizontal line respectively. Note the mean line is now moved up the scale to above the 10000-step mark in contrast to the median line remain unchanged, the shift in central values to become much closer to each other explain the *average daily activity data* sorted by date in descending order derived from the imputed data set had attained improved normal (symmetrical) distribution.
 &nbsp;
 
 ### Activity pattern between weekdays and weekends
+
 <!-- Activity Pattern between Weekday & Weekend plot using lattice graphic -->
 ```{r}
 library(lattice)
 
-dow <- if_else(wday(as_date(activity.imputed$Date)) %in% c(7,1),"weekend","weekday")
+dow <- if_else(wday(as_date(activity.imputed$Date)) 
+               %in% c(7,1),"weekend","weekday")
 activity.imputed <- activity.imputed %>% mutate(DoW = as.factor(dow))
 rm(dow)
 
@@ -361,13 +369,15 @@ xyplot(Steps ~ Interval | DoW, data = activity.imputed.ts,
 detach("package:lattice", unload = TRUE)
 ```
 
+There is apparent difference observed in the time series plot between weekend and weekday, which activity average paces are more intense over the weekends than weekdays. The anonymous individual tends to pick up paces later at 0800 ~ 0830 for the weekends as oppose to weekdays, and wind-down paces later for the day over the weekends too. 
+
+&nbsp;
+
 ```{r house.keeping}
-# detach("package:scales", unload = TRUE)
-# detach("package:dplyr", unload = TRUE)
-# detach("package:lubridate", unload = TRUE)
-# rm(.Rfliburl)
-# rm(getRflib)
-# rm(is.defined)
-# rm(myplclust)	
-# rm(strCap)
+detach("package:scales", unload = TRUE)
+detach("package:dplyr", unload = TRUE)
+detach("package:lubridate", unload = TRUE)
+rm(.Rfliburl,getRflib,is.defined,myplclust,strCap)
+rm(activity,activity.ts,activity.imputed,activity.imputed.ts,actsum)
+rm(filels,gr0,h,datadir,na.count,na.ratio,pal,par.default)
 ```
