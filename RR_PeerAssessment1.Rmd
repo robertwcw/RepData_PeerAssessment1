@@ -336,7 +336,7 @@ title(main = "Number of Steps Taken Per Day",
       cex = 1)
 ```
 
-The histogram for **Number of Steps Taken Per Day** plotted using imputed **activity** data set, compared to the first histogram of the same based on pre-imputed data, proximity of both the mean value `r format(mean(actsum$Steps),nsmall=2)` and median value `r format(median(actsum$Steps),nsmall=2)` are now become fairly close as indicated by the red horizontal line and green horizontal line respectively. Note the mean line is now moved up the scale to above the 10000-step mark in contrast to the median line remain unchanged, the shift in central values to become much closer to each other explain the imputed data set had attained improved symmetrical distribution.
+The histogram for **Number of Steps Taken Per Day** plotted using imputed *average daily activity data*, compared to the first histogram of the same based on pre-imputed data, proximity of both the mean value `r format(mean(actsum$Steps),nsmall=2)` and median value `r format(median(actsum$Steps),nsmall=2)` have become fairly close together as indicated by the red horizontal line and green horizontal line respectively. Note the mean line is now moved up the scale to above the 10000-step mark in contrast to the median line remain unchanged, the shift in central values to become much closer to each other explain the *average daily activity data* sorted by date in descending order derived from the imputed data set had attained improved normal (symmetrical) distribution.
 &nbsp;
 
 ### Activity pattern between weekdays and weekends
