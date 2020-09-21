@@ -4,6 +4,8 @@ output:
   html_document: 
     fig_caption: yes
     keep_md: yes
+editor_options: 
+  chunk_output_type: inline
 ---
 
 
@@ -360,7 +362,7 @@ title(main = "Number of Steps Taken Per Day",
 
 ![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
 
-The histogram for **Number of Steps Taken Per Day** plotted using imputed *average daily activity data*, compared to the previous histogram of the same based on pre-imputed data, proximity of both the mean value 10126.67 and median value 10395.00 have become fairly close together as indicated by the red horizontal line and green horizontal line respectively. Note the mean line is now moved up the scale to above the 10000-step mark in contrast to the median line remain unchanged, the shift in central values to become much closer to each other explain the *average daily activity data* sorted by date in descending order derived from the imputed data set had attained improved normal (symmetrical) distribution.  
+The histogram for **Number of Steps Taken Per Day** plotted using imputed *average daily activity data*, compared to the previous histogram of the same based on pre-imputed data, proximity of both the mean value 10126.67 and median value 10395.00 have become fairly close together as indicated by the red horizontal line and green horizontal line respectively. Note the mean line is now moved up the scale to above the 10000-step mark in contrast to the median line remain unchanged, the shift in central values to become much closer to each other explain the *average daily activity data* sorted by date in ascending order derived from the imputed data set had attained improved normal (symmetrical) distribution.  
 &nbsp;  
 
 ### Are there differences in activity patterns between weekdays and weekends?
